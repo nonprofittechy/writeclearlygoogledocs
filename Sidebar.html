@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+    <!-- The CSS package above applies Google styling to buttons and other elements. -->
+    
+    <style>
+    .branding-below {
+      bottom: 56px;
+      top: 0;
+    }
+
+    .branding-text {
+      left: 7px;
+      position: relative;
+      top: 3px;
+    }
+
+    .col-contain {
+      overflow: hidden;
+    }
+
+    .col-one {
+      float: left;
+      width: 50%;
+    }
+
+    .logo {
+      vertical-align: middle;
+    }
+
+    .radio-spacer {
+      height: 20px;
+    }
+
+    .width-100 {
+      width: 100%;
+    }
+    
+    .wc-list {
+      display: none;
+    }
+    
+    .wc-list-full { 
+      border-style: dotted;
+      display: none;
+    }
+    
+    .wc-hinted {
+      background-color: lightpink;
+    }
+    
+    .wc-hint {
+      visibility: hidden;
+      display: none;
+    }
+    
+    .wc-clickable {
+      visibility: hidden;
+      display: none;
+    }
+    
+    .suggestions-list {
+      padding: 0em;
+    }
+    
+    .suggestions-item {
+      padding: 0em;
+    }
+    
+    .fkgl-index {
+      text-align: center;
+     // justify-content: center;
+    }
+    
+    .fkgl-gradelevel {
+      //font-weight: bold;
+      font-size: 32px;
+      vertical-align: middle;
+    }
+    
+    .fkgl-image {
+      max-height: 32px;
+      max-width: 32px;
+//      margin-right: 10px;
+      margin-left: 10px;
+      vertical-align: middle;
+      }
+    
+</style>
+
+  </head>
+  <body>
+    <div class="sidebar branding-below">
+    
+    <div class="title">
+    <h1>WriteClearly</h1>
+    </div>
+    <div class="secondary">
+    <p> The average reading level of adult Americans is at the 8th grade level. Experts recommend that to be readable by the average American, 
+    a web page should be at the 6th grade reading level. Use WriteClearly to easily test the 
+    reading grade level of your document with a single click. </p>
+    </div>
+    <h2> Flesch-Kincaid Grade Level</h2>
+    <div id="fkgl-index">
+    
+    </div> 
+    <h2>Suggestions</h2>
+    <div id="suggestions">
+    Suggestions from WriteClearly
+    </div>
+      <form>
+       <div class="block" id="button-bar">
+          <button class="blue" id="run-evaluation">Evaluate</button>
+          
+          <!-- <button class="blue" id="insert-suggestion">Insert Suggestion</button> -->
+        </div>
+      </form>
+    </div>
+
+    <div class="sidebar bottom">
+      <img alt="Add-on logo" class="logo" src="http://openadvocate.org/img/open-advocate-25.png" width="27" height="27">
+      <span class="gray branding-text">WriteClearly by Open Advocate</span>
+    </div>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
+    </script>
+    <script>
+      /**
+       * On document load, assign click handlers to each button
+       */
+      $(function() {
+        $('#run-evaluation').click(runEvaluation);
+        $('#insert-text').click(insertText);
+        google.script.run.withSuccessHandler(loadPreferences)
+            .withFailureHandler(showError).getPreferences();
+      });
+
+      /**
+       * Callback function that populates the origin and destination selection
+       * boxes with user preferences from the server.
+       *
+       * @param {Object} languagePrefs The saved origin and destination languages.
+       */
+      function loadPreferences(languagePrefs) {
+        $('input:radio[name="origin"]')
+            .filter('[value=' + languagePrefs.originLang + ']')
+            .attr('checked', true);
+        $('input:radio[name="dest"]')
+            .filter('[value=' + languagePrefs.destLang + ']')
+            .attr('checked', true);
+      }
+
+      /**
+       * Runs a server-side function to translate the user-selected text and update
+       * the sidebar UI with the resulting translation.
+       */
+      function runEvaluation() {
+      console.log("before disabled");
+        this.disabled = true;
+        console.log("after disabled");
+        $('#error').remove();
+        var origin = $('input[name=origin]:checked').val();
+        var dest = $('input[name=dest]:checked').val();
+        var savePrefs = $('#save-prefs').is(':checked');
+        google.script.run
+            .withSuccessHandler(
+              function(textEvaluation, element) {
+              console.log(textEvaluation)
+              var gradeHTML = "";
+              var gradeLevel = textEvaluation.index
+              
+              if (gradeLevel <= 6) {
+                // smiley face
+                var imgtag = '<img class="fkgl-image" src="http://emojipedia-us.s3.amazonaws.com/cache/1b/52/1b526018b526ffcbc024dfeaa5d647d0.png"/>';
+              } else if (gradeLevel <= 9) {
+                // neutral face
+                var imgtag = '<img class="fkgl-image" src="http://emojipedia-us.s3.amazonaws.com/cache/1b/52/1b526018b526ffcbc024dfeaa5d647d0.png"/>';
+              } else if (gradeLevel <= 11) {
+                // frowny face
+                var imgtag = '<img class="fkgl-image" src="http://emojipedia-us.s3.amazonaws.com/cache/8f/f5/8ff5fb3fbb1cf23d9d7f1558e0b95021.png"/>';
+              } else if (gradeLevel > 11) {
+                // angry face
+                var imgtag = '<img class="fkgl-image" src="http://emojipedia-us.s3.amazonaws.com/cache/08/4e/084ee20e931bf8cb42c6952678f3e160.png"/>';
+              }
+              
+              gradeHTML = '<span class="fkgl-gradelevel">' + gradeLevel + '</span>' + imgtag;
+              
+                $('#fkgl-index').html(gradeHTML);
+                var suggestions = '<ul class="suggestions-list">'
+                for (var i=0; i < textEvaluation.suggestions.length; i++) {
+                   suggestions += '<li class="suggestion-item"><ul><li>Suggestion: ';
+                   suggestions += textEvaluation.suggestions[i].summary + "</li>";
+                   suggestions += '<ul><li class="suggestion-content">' + textEvaluation.suggestions[i].content + "</li></ul></ul>";
+                }
+                suggestions += "</ul>"
+                $('#suggestions').html(suggestions);
+                element.disabled = false;
+              })
+            .withFailureHandler(
+              function(msg, element) {
+                showError(msg, $('#button-bar'));
+                element.disabled = false;
+              })
+            .withUserObject(this)
+            .getTextEvaluation();
+      }
+
+      /**
+       * Runs a server-side function to insert the translated text into the document
+       * at the user's cursor or selection.
+       */
+      function insertText() {
+        this.disabled = true;
+        $('#error').remove();
+        google.script.run
+            .withSuccessHandler(
+              function(returnSuccess, element) {
+                element.disabled = false;
+              })
+            .withFailureHandler(
+              function(msg, element) {
+                showError(msg, $('#button-bar'));
+                element.disabled = false;
+              })
+            .withUserObject(this)
+            .insertText($('#translated-text').val());
+      }
+
+      /**
+       * Inserts a div that contains an error message after a given element.
+       *
+       * @param msg The error message to display.
+       * @param element The element after which to display the error.
+       */
+      function showError(msg, element) {
+        var div = $('<div id="error" class="error">' + msg + '</div>');
+        $(element).after(div);
+      }
+    </script>
+  </body>
+</html>
