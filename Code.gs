@@ -246,7 +246,7 @@ function getTextEvaluation() {
   
   var text = textArray.join('\n');
   
-  var url = "http://writeclearly-stage.openadvocate.org/oawc/service.php"
+  var url = "XXXXXXX_URL_IS_Not_Public_YET_XXXXXXXXXXXXXXX"
   var headers = {
   }
   var data = {
